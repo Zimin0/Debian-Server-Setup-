@@ -77,22 +77,29 @@ cd project_dir
 python3.7 -m venv env
 . ./env/bin/activate
 ```
-Активируется виртуальное окружение <br>
+Активируется виртуальное окружение. <br>
 Для проверки работы проекта можно выполнить и в браузере открыть server-ip:8181: 
 ```
 python manage.py runserver 0.0.0.0:8181
 ```
 
 ## :anger: Установка и настройка Gunicorn :anger:
-
+Устанавливаем Gunicorn:
 ```
 pip install gunicorn
-pip freeze > requirements.txt
 ```
-В папке с manage.py
+
+Создаем юзера, через которого будет запускаться Gunicorn:
+```
+adduser www
+usermod -aG sudo www
+```
+
+В папке на уровне manage.py:
 ```
 touch gunicorn_config.py
 ```
+
 В него вставляем код (кол-во воркеров = кол-во ядер процессора * 2 + 1): 
 ```
 command = '/home/www/code/project/env/bin/gunicorn'
@@ -105,28 +112,24 @@ limit_request_field_size = 0
 raw_env = 'DJANGO_SETTINGS_MODULE=project.settings'
 workers = 2 * n + 1, где n – кол-вао ядер
 ```
-Pwd - /home/www/code/project ( уровень manage.py )
-
-Создаем юзера, через которого будет запускаться Gunicorn
-```
-adduser www
-usermod -aG sudo www
-```
-
+Создаем bash скрипт для запуска Gunicorn:
 ```
 mkdir bin
 touch bin/start_gunicorn.sh
 ```
-В файл записываем:
+
+В start_gunicorn.sh записываем:
 ```
 #!/bin/bash 
 source /home/www/code/monstory_project/env/bin/activate
-gunicorn -c “/home/www/code/monstory_project/ monstory_project/gunicorn_config.py” monstory_project.wsgi
+gunicorn -c "/home/www/code/monstory_project/monstory_project/gunicorn_config.py" monstory_project.wsgi
 ```
+
 Добавляем права запуска для bash скрипта
 ```
 chmod +x bin/start_gunicorn.sh
 ```
+
 Запускаем Gunicorn: 
 ```
 ./bin/start_gunicorn.sh
@@ -138,40 +141,47 @@ chmod +x bin/start_gunicorn.sh
 nano /etc/nginx/sites-available/default
 ```
 
-Добавляем код: /home/cloudadmin/vkbotbook
-
-!!!!!!!!!!!!!! Поправить кавычки, заменить на базовый локейшн !!!!!!!!!!!!!!
-
+Заменяем блок location на код (возможно нужно будет поправить кавычки):
+```
 location / {
 proxy_pass http://127.0.0.1:8001;
 proxy_set_header X-Forwarded-Host $server_name;
 proxy_set_header X-Real-IP $remote_addr;
-add_header P3P ‘CP-“ALL DSP COR PSAa PSDa OUR NOR UNI COM NAV”’;
+add_header P3P 'CP-"ALL DSP COR PSAa PSDa OUR NOR UNI COM NAV"';
 add_header Access-Control-Allow-Origin *;
 }
+```
 
-Перезапускаем Nginx, чтобы он подтянул конфиги:
+Перезапускаем Nginx, чтобы он подтянул новый конфиг:
 ```
 service nginx restart
 ```
-По ip сервера должно появиться окно 502 с nginx
-логи доступа nginx 
-nano  /var/log/nginx/access.log
-Запустить gunicorn 
-Приложение заработает на 8001 порту
 
-Запуск supervisor
+По ip сервера должно появиться окно 502 с Nginx.
+
+Логи запросов к серверу Nginx можно посмотреть в: 
+```
+nano  /var/log/nginx/access.log
+```
+
+Запустить gunicorn - > приложение заработает на 8001 порту IP сервера. 
+
+## :anger: Запуск supervisor (НЕ ЗАКОНЧЕНО!) :anger:
 nano /etc/supervisor/conf.d/Craft-Site.conf
 
 ## :anger: Настройка раздачи статического/медиа контента :anger:
 В том же файле Nginx (sites-available)
 ```
 location /static/ {
-        root /home/theo/mywebsite;
+        root /path/to/to/collectstatic/folder;
     }
 ```
+
 Прописать chmod 777 для базы данных проекта, если это SQLite
 
+```
+chmod -R 777 db.sqlite3
+```
 
 ## :anger: Настройка доменного имени для хостинга Reg.ru :anger:
 Найти нужный домен на www.reg.ru 
