@@ -33,6 +33,7 @@ sudo system ssh restart
 ```
 
 ## :anger: Установка полезных пакетов :anger:
+Обновление системы и установка различных пакетов:
 ```
 sudo apt-get update ; 
 sudo apt-get install -y vim mosh tmux htop git curl wget unzip zip gcc build-essential make 
@@ -43,17 +44,19 @@ sudo apt-get install python-pil python3-pil
 sudo apt-get install -y zsh tree redis-server nginx zlib1g-dev libbz2-dev libreadline-dev llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev liblzma-dev python3-dev python3-lxml libxslt-dev libffi-dev libssl-dev python-dev-is-python3 gnumeric libsqlite3-dev libpq-dev libxml2-dev libxslt1-dev libjpeg-dev libfreetype6-dev libcurl4-openssl-dev supervisor 
 ```
 
-Установка zsh как дефолтного shell
+Установка zsh как дефолтного shell:
 ```
 chsh -s $(which zsh)
 ```
 
-Установка красивого python-shell
+Установка красивого python-shell:
 ```
 pip install ipython
 ```
 
-## :anger: Установка Python-3.7 :anger:
+## :anger: Установка Python-3.7 + VENV :anger:
+Установка Python3.7 из исходников - может занять от 10-15 минут. <br>
+После установки можно удалить обе папки - архив и Python-3.7.3
 ```
 mkdir ~/code
 
@@ -67,7 +70,9 @@ sudo make altinstall
 
 sudo /home/www/.python/bin/python3.7 -m pip install -U pip
 ```
-После установки можно удалить обе папки - архив и Python-3.7.3
+
+
+Настройка виртуального окружения:
 ```
 apt-get install -y python3-venv
 /home/www/
@@ -77,7 +82,6 @@ cd project_dir
 python3.7 -m venv env
 . ./env/bin/activate
 ```
-Активируется виртуальное окружение. <br>
 Для проверки работы проекта можно выполнить и в браузере открыть server-ip:8181: 
 ```
 python manage.py runserver 0.0.0.0:8181
@@ -125,7 +129,7 @@ source /home/www/code/monstory_project/env/bin/activate
 gunicorn -c "/home/www/code/monstory_project/monstory_project/gunicorn_config.py" monstory_project.wsgi
 ```
 
-Добавляем права запуска для bash скрипта
+Добавляем права запуска для bash скрипта:
 ```
 chmod +x bin/start_gunicorn.sh
 ```
@@ -137,6 +141,7 @@ chmod +x bin/start_gunicorn.sh
 
 ## :anger: Настройка Nginx :anger:
 
+Открываем файл конфига Nginx:
 ```
 nano /etc/nginx/sites-available/default
 ```
@@ -167,17 +172,19 @@ nano  /var/log/nginx/access.log
 Запустить gunicorn - > приложение заработает на 8001 порту IP сервера. 
 
 ## :anger: Запуск supervisor (НЕ ЗАКОНЧЕНО!) :anger:
+```
 nano /etc/supervisor/conf.d/Craft-Site.conf
+```
 
 ## :anger: Настройка раздачи статического/медиа контента :anger:
-В том же файле Nginx (sites-available)
+В том же файле default Nginx (sites-available):
 ```
 location /static/ {
         root /path/to/to/collectstatic/folder;
     }
 ```
 
-Прописать chmod 777 для базы данных проекта, если это SQLite
+Прописать chmod 777 для базы данных проекта, если это SQLite:
 
 ```
 chmod -R 777 db.sqlite3
